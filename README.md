@@ -1,48 +1,234 @@
-# NYC Restaurant Compass — Claude Code Workshop
+# 🧭 NYC Restaurant Compass — Build a Website & App Workshop
 
-Build a full-stack **website + iOS app** on an **AWS backend**, using [Claude Code](https://claude.com/claude-code) as your pair programmer.
+Welcome! 👋 In this workshop you'll build a real website **and** a real iPhone app — even if you've never written a line of code in your life.
 
-The demo: **NYC Restaurant Compass.** Sign up, log in, pick any restaurant in New York City, and your phone becomes a compass that points straight at it. Logged-in users can also **add their own stores**.
+You won't be doing the coding yourself. **Claude Code** (an AI assistant) writes the code for you. Your job is to tell it what you want, follow the steps below, and watch it come to life. Think of yourself as the director, and Claude Code as the crew.
 
-We build in two phases:
+## What we're building
 
-1. **Web first** — get the **landing page and login/register** clean and deployed.
-2. **iOS next** — the native app with the live compass, sharing the same accounts and data.
+A fun app called **NYC Restaurant Compass**:
 
-> This project is scaffolded from the **`portrait_v2` template** (`/Users/babuwanyeki/Documents/iOSApps/portrait_v2`): a Next.js + AWS Amplify Gen 2 monorepo with a companion SwiftUI iOS app. Both surfaces share one Cognito user pool and one GraphQL/DynamoDB backend, so accounts and data are interchangeable across web and iOS.
+- You sign up and log in.
+- You pick a restaurant in New York City from a list.
+- Your phone turns into a **compass** — the needle points straight toward that restaurant, so you can literally follow it there.
+- You can also **add your own restaurants** to the list.
+
+We'll build it in two parts:
+
+1. **The website first** — we'll get the welcome page and the login working and looking nice.
+2. **The iPhone app next** — same accounts, same data, plus the live compass.
 
 ---
 
-## Tech stack
+## A few words you'll see a lot (don't worry, that's all the jargon)
+
+You don't need to memorize these — just glance back here whenever a word looks unfamiliar.
+
+| Word | What it actually means |
+| --- | --- |
+| **Website** | The thing you open in a web browser like Chrome or Safari. |
+| **App** | The thing you install on your iPhone. |
+| **Backend** | The "behind the scenes" part that lives on the internet — it remembers your account and your list of restaurants. Like the kitchen behind a restaurant: you don't see it, but nothing works without it. |
+| **AWS** | Amazon Web Services — the company that runs our backend on their computers (so we don't have to). |
+| **Terminal** | A plain text window where you type commands. We'll tell you exactly what to type — you just copy, paste, and press Enter. |
+| **Command** | A line of text you type into the Terminal to make something happen. |
+| **Repo** (repository) | A folder that holds all your project's files, with a history of changes. |
+| **Deploy** | To put your website or app "live" on the internet so other people can use it. |
+| **Claude Code** | Your AI assistant. It writes and edits the code when you ask it to, in plain English. |
+
+> 💡 **Where do I type commands?** In VS Code (which you'll install below), open the menu **Terminal → New Terminal**. A panel opens at the bottom — that's where commands go.
+
+---
+
+## Part 1 — Set up your accounts and tools
+
+We need to create a few free accounts and install a few programs. Take your time and do these in order. ☕
+
+### Step 1 — Install VS Code (your workspace)
+
+VS Code is the program where everything happens — it's like Microsoft Word, but for building apps.
+
+1. Go to **[code.visualstudio.com](https://code.visualstudio.com/)** and click the big download button.
+2. Install it like any other program.
+3. Open it. We'll come back to it in every step.
+
+### Step 2 — Create a GitHub account (where your project lives)
+
+GitHub is like Google Drive for code — it stores your project safely online and is what we use to put your website on the internet later.
+
+1. Go to **[github.com/signup](https://github.com/signup)**.
+2. Create an account and confirm your email.
+
+### Step 3 — Set up Claude Code (your AI assistant)
+
+This is the helper that actually writes the code.
+
+1. Create a Claude account at **[claude.ai](https://claude.ai)**.
+2. Claude Code needs a paid plan (Claude **Pro** or **Max**). Pick one at **[claude.ai/settings/billing](https://claude.ai/settings/billing)**.
+3. In VS Code, install the **Claude Code extension**: click the squares icon on the left (Extensions), search for **"Claude Code"**, and click **Install**. [Direct link here.](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code)
+4. When it asks you to log in, follow the prompt — it opens your browser and connects your Claude account.
+
+> From now on, you can just *talk* to Claude Code inside VS Code. Ask it things in plain English like "build me a welcome page."
+
+### Step 4 — Create an AWS account (your backend)
+
+AWS is where your accounts and restaurant list will be stored online.
+
+1. Go to **[aws.amazon.com](https://aws.amazon.com/)** and click **Create an AWS Account**.
+2. You'll need to enter a credit card. **Don't panic** — this project is designed to stay within AWS's free tier, so you shouldn't be charged. (We'll clean everything up at the end so it stays that way.)
+3. **Give your account permission to build the backend.** This is a one-time setting:
+   - Sign in to AWS and search for **IAM** in the top search bar.
+   - Go to **Users → your user → Add permissions → Attach policies directly**.
+   - Search for **`AmplifyBackendDeployFullAccess`**, tick the box, and save.
+   - *(In plain English: this lets our tools create the backend on your behalf. Without it, the backend steps will fail with a "permission denied" message.)*
+
+> 🙋 Not sure how to do any AWS step? Ask Claude Code! Type: *"Walk me through attaching the AmplifyBackendDeployFullAccess policy in AWS, step by step."*
+
+### Step 5 — Install the helper tools
+
+These are two small programs our project needs. In VS Code, open a Terminal (**Terminal → New Terminal**) and we'll install them.
+
+- **Node.js** — download the "LTS" version from **[nodejs.org](https://nodejs.org/)** and install it. (This lets the website run on your computer while you build it.)
+- **AWS CLI** — follow the installer at **[aws.amazon.com/cli](https://aws.amazon.com/cli/)**. Then connect it to your AWS account by typing this in the Terminal and pressing Enter:
+
+  ```bash
+  aws configure --profile workshop
+  ```
+
+  It will ask for an "Access Key", "Secret Key", and "region". You get these from your AWS account (Claude Code can walk you through finding them — just ask!). The word `workshop` is just a nickname for your AWS account; remember it for later.
+
+✅ **You also only need this if you're building the iPhone app (Part 4):** install **Xcode** from the Mac App Store. (Mac only.)
+
+---
+
+## Part 2 — Build the website (welcome page + login)
+
+Now the fun part. Open your project folder in VS Code (**File → Open Folder**) and open a Terminal.
+
+### Step 1 — Start the backend
+
+Type this and press Enter:
+
+```bash
+npm install
+npx ampx sandbox --profile workshop
+```
+
+What this does: the first line gathers the building blocks the project needs. The second line creates your personal backend on AWS (your login system and database). **Leave this Terminal window running** — it keeps watching for changes. Open a *second* Terminal for the next step (**Terminal → New Terminal** again).
+
+### Step 2 — Start the website on your computer
+
+In the **second** Terminal, type:
+
+```bash
+cd web
+npm install
+cp ../amplify_outputs.json src/amplify_outputs.json
+npm run dev
+```
+
+When it finishes, it'll show a web address like **http://localhost:3000**. Hold Cmd (Mac) or Ctrl (Windows) and click it — your website opens in the browser! Right now it's mostly empty. That's where Claude Code comes in.
+
+### Step 3 — Ask Claude Code to build it
+
+This is the heart of the workshop. Talk to Claude Code and ask for what you want. Try these, one at a time:
+
+- *"Build a clean, friendly welcome page for an app called NYC Restaurant Compass. Explain what it does and add a big Sign Up button."*
+- *"Now create the Sign Up and Log In pages, connected to our backend so people can actually make accounts."*
+- *"After someone logs in, show them a page that lists NYC restaurants and lets them add a new one."*
+
+After each request, refresh your browser to see what changed. Don't like something? Just say so: *"Make the welcome page use warmer colors and a bigger headline."*
+
+🎯 **You've finished Part 2 when:** the welcome page looks nice, a new person can sign up, confirm their email, log in, and add a restaurant that's still there when they come back.
+
+---
+
+## Part 3 — Put your website on the internet
+
+Right now your website only runs on *your* computer. Let's make it public.
+
+1. **Save your project to GitHub.** Ask Claude Code: *"Help me put this project on GitHub."* It'll walk you through it.
+2. Go to the **AWS Amplify** service in your AWS account → **Host web app → Deploy from GitHub**, and choose your project.
+3. AWS reads the included settings file and does the rest. After a few minutes, you get a real web address you can share with anyone! 🎉
+
+> If something fails here, copy the error message and paste it to Claude Code — it'll tell you what to fix.
+
+---
+
+## Part 4 — Build the iPhone app (Mac only)
+
+The app shares the *same* accounts and restaurants as your website — so anyone who signed up on the website can log in on the phone too.
+
+1. Open the app project in **Xcode** (ask Claude Code: *"Open the iOS app in Xcode for me"* if you're unsure how).
+2. Ask Claude Code to build the features, one at a time:
+   - *"Add sign up and log in to the iPhone app, using the same backend as the website."*
+   - *"Show a list of the restaurants from our backend."*
+   - *"Let me add a new restaurant from the phone."*
+   - *"Build the compass: point a needle at whichever restaurant I select, and keep it pointing as I turn around."*
+3. Press the ▶️ Play button in Xcode to try it on the iPhone simulator.
+
+---
+
+## When you're done — clean up (avoid surprise charges) 🧹
+
+To make sure AWS doesn't keep anything running:
+
+1. In the Terminal that's running the backend, press **Ctrl + C** to stop it.
+2. Then type:
+
+   ```bash
+   npx ampx sandbox delete --profile workshop
+   ```
+
+3. If you deployed your website in Part 3, delete the app in the **AWS Amplify** console too.
+
+Not sure if everything's gone? Ask Claude Code: *"Help me confirm I've deleted all the AWS resources from this project so I won't be charged."*
+
+---
+
+## Tips for talking to Claude Code 💬
+
+- **Ask for one thing at a time.** "Build the login page" works better than "build the whole app."
+- **Be specific about what you want.** Colors, wording, layout — it can do all of it.
+- **Paste any error messages** straight into the chat. Errors are normal and Claude Code is great at fixing them.
+- **It's okay to say "I don't understand."** Ask it to explain anything in simpler terms.
+- **Nothing is permanent.** If you don't like a change, just ask it to undo or redo it differently.
+
+---
+
+## 🆘 Stuck?
+
+Almost every problem can be solved by copying what you see on screen (a command that didn't work, or a red error message) and pasting it to Claude Code with "I'm stuck — what do I do?" That's genuinely the intended way to use this — you're not cheating, you're working as designed.
+
+---
+
+<details>
+<summary>🔧 For the curious — what's under the hood</summary>
+
+This project is built from a template (`portrait_v2`): a Next.js web app + AWS Amplify Gen 2 backend, with a companion SwiftUI iOS app. The website and the app share one Cognito user pool and one GraphQL/DynamoDB backend, so accounts and data are interchangeable.
+
+**Tech stack**
 
 | Layer | Tech |
 | --- | --- |
-| **Web** | Next.js 16 (App Router, **SSR**), TypeScript, Tailwind CSS |
-| **iOS** | SwiftUI + AWS Amplify Swift libraries |
-| **Auth** | Amazon Cognito (email login) |
-| **Data/API** | AWS AppSync (GraphQL) backed by **DynamoDB** |
-| **Functions** | AWS Lambda (custom business logic) |
-| **Storage** | Amazon S3 (store photos) |
-| **Backend IaC** | AWS Amplify **Gen 2** (`amplify/` — TypeScript) |
-| **Hosting** | AWS Amplify Hosting (SSR) |
-| **AI pair programmer** | Claude Code |
+| Web | Next.js 16 (App Router, **SSR**), TypeScript, Tailwind CSS |
+| iOS | SwiftUI + AWS Amplify Swift |
+| Auth | Amazon Cognito (email login) |
+| Data/API | AWS AppSync (GraphQL) → DynamoDB |
+| Functions | AWS Lambda |
+| Storage | Amazon S3 (restaurant photos) |
+| Backend | AWS Amplify Gen 2 (`amplify/`, TypeScript) |
+| Hosting | AWS Amplify Hosting (SSR) |
 
-### ⚠️ This is an SSR app (not a static export)
+**This is a server-rendered (SSR) app, not a static export.** Two settings make that work:
 
-The web app is server-rendered. The template was switched from a static export to SSR — when you scaffold, make sure these two things match:
-
-- **`web/next.config.js`** — no `output: "export"` (and no static-only `trailingSlash` / `images.unoptimized`). Plain SSR config:
-
+- `web/next.config.js` — no `output: "export"`:
   ```js
   /** @type {import('next').NextConfig} */
-  const nextConfig = {
-    reactStrictMode: true,
-  };
+  const nextConfig = { reactStrictMode: true };
   module.exports = nextConfig;
   ```
-
-- **`amplify.yml`** — artifacts `baseDirectory` is **`.next`** (the SSR build output), **not** `out`:
-
+- `amplify.yml` — artifacts `baseDirectory` is `.next` (not `out`):
   ```yaml
   artifacts:
     baseDirectory: .next
@@ -50,167 +236,7 @@ The web app is server-rendered. The template was switched from a static export t
       - '**/*'
   ```
 
----
-
-## Repository layout
-
-```
-Workshop1/
-├── amplify/                 # Amplify Gen 2 backend (TypeScript)
-│   ├── auth/resource.ts     # Cognito (email login)
-│   ├── data/resource.ts     # GraphQL schema → DynamoDB (Restaurant model)
-│   ├── functions/           # Lambda functions
-│   ├── storage/             # S3 bucket (store photos)
-│   └── backend.ts           # wires it all together
-├── amplify_outputs.json     # generated backend config (sandbox)
-├── web/                     # Next.js SSR web app
-│   ├── next.config.js       # SSR config (no output: export)
-│   ├── src/app/             # App Router: page.tsx (landing), login, signup, dashboard…
-│   ├── src/lib/             # amplify-config, auth-context, data-api
-│   └── src/components/      # ui/, marketing/, auth/
-└── <iOS Xcode project>/     # SwiftUI app (Phase 2)
-```
-
----
-
-## Before you start — create your accounts
-
-This workshop assumes you're starting from scratch. Create these three accounts first (each is free to sign up):
-
-### 1. GitHub account (for code + deploys)
-
-1. Go to **[github.com/signup](https://github.com/signup)** and create an account.
-2. Verify your email.
-3. (Recommended) Install [GitHub Desktop](https://desktop.github.com/) or set up `git` on the command line so you can push code. Amplify Hosting deploys straight from a GitHub repo, so you'll need this in Phase 1.
-
-### 2. Claude account + Claude Code (your AI pair programmer)
-
-1. Sign up at **[claude.ai](https://claude.ai)** with your email.
-2. To use Claude Code you need an active plan (Pro or Max) **or** API billing. Choose one in your [account settings](https://claude.ai/settings/billing).
-3. Install Claude Code:
-   ```bash
-   npm install -g @anthropic-ai/claude-code
-   ```
-4. Run it once and log in when prompted:
-   ```bash
-   claude
-   # follow the browser login flow to connect your Claude account
-   ```
-
-### 3. Install VS Code (your editor)
-
-1. Download and install **[Visual Studio Code](https://code.visualstudio.com/)** for your OS.
-2. (Recommended) Add the [Claude Code extension](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code) so you can run Claude Code right inside the editor.
-
-### 4. AWS account (the backend)
-
-1. Sign up at **[aws.amazon.com](https://aws.amazon.com/)** → **Create an AWS Account**. A credit card is required, but this demo stays within the free tier.
-2. Install the [AWS CLI](https://aws.amazon.com/cli/) and configure a named profile:
-   ```bash
-   aws configure --profile workshop
-   # paste your Access Key ID, Secret Access Key, region (e.g. us-east-1)
-   ```
-   Remember this profile name (`workshop`) — you'll pass it to the Amplify commands below.
-
----
-
-## Prerequisites (tools)
-
-- [ ] **GitHub**, **Claude**, and **AWS** accounts (see above)
-- [ ] [Node.js](https://nodejs.org/) **20+** and npm
-- [ ] [Claude Code](https://claude.com/claude-code) installed and logged in
-- [ ] [AWS CLI](https://aws.amazon.com/cli/) configured with a named profile
-- [ ] **VS Code** installed (with the Claude Code extension)
-- [ ] **Xcode 15+** (Phase 2, iOS) — macOS only
-
----
-
-## Phase 1 — Web (landing page + login)
-
-### 1. Install and run the backend sandbox
-
-The Amplify sandbox spins up a personal Cognito + AppSync + DynamoDB stack and writes `amplify_outputs.json`.
-
-```bash
-# from the repo root
-npm install
-npx ampx sandbox --profile <your-aws-profile>
-# leave this running — it watches amplify/ and redeploys on change
-```
-
-### 2. Run the web app
-
-```bash
-cd web
-npm install
-
-# point the web app at the sandbox backend
-cp ../amplify_outputs.json src/amplify_outputs.json
-
-npm run dev
-# open http://localhost:3000
-```
-
-### 3. Build the landing page and auth (the Phase 1 goal)
-
-Drive this with Claude Code. Focus on a **clean landing page** and a **working login/register** flow before anything else:
-
-- `web/src/app/page.tsx` — marketing landing page (hero, what the app does, call-to-action).
-- `web/src/app/signup`, `login`, `confirm`, `forgot-password` — Cognito auth screens.
-- `web/src/lib/auth-context.tsx` — `signUp` / `signIn` / `confirmSignUp` / `signOut` against Cognito.
-- `web/src/app/dashboard/` — protected route: list NYC restaurants and a form to **add a store**.
-
-**Definition of done for Phase 1:** landing page looks clean, a new user can register → confirm email → log in → land on the dashboard, and add a store that persists to DynamoDB.
-
-### 4. Deploy the web app (AWS Amplify Hosting)
-
-1. Push the repo to GitHub.
-2. AWS Amplify console → **Host web app → Deploy from GitHub**, choose this repo.
-3. Amplify detects `amplify.yml` (SSR; `baseDirectory: .next`) and provisions the backend on your branch.
-4. Add any required environment variables in the Amplify console.
-
-To deploy backend changes to a branch from the CLI:
-
-```bash
-npx ampx pipeline-deploy --branch main --app-id <your-amplify-app-id>
-```
-
-To regenerate the production outputs locally:
-
-```bash
-npx ampx generate outputs --profile <your-aws-profile> --branch main \
-  --app-id <your-amplify-app-id> --out-dir /tmp \
-  && mv /tmp/amplify_outputs.json amplify_outputs.main.json
-```
-
----
-
-## Phase 2 — iOS app
-
-The iOS app reuses the **same** Cognito pool and GraphQL backend, so accounts created on the web work on iOS immediately.
-
-### 1. Open the project
-
-```bash
-open *.xcodeproj   # from the repo root
-```
-
-### 2. Connect to the backend
-
-`amplify_outputs.json` (from the sandbox or the `main` branch) is bundled into the app so Amplify Swift configures against the same backend as the web app.
-
-### 3. Build the features (in this order)
-
-1. **Auth first** — sign up / confirm / sign in / sign out (mirror the web flow with Amplify Auth).
-2. **Restaurant list** — fetch restaurants from the GraphQL API.
-3. **Add a store** — authenticated create mutation.
-4. **The compass** — read device **location** (`CoreLocation`) and **heading** (magnetometer), compute the **bearing** from the user to the selected restaurant, and rotate a needle to point at it live.
-
----
-
-## Data model (target)
-
-A single `Restaurant` model, owner-authorized so users manage their own stores:
+**The data model** — a single `Restaurant`, owner-authorized so users manage their own:
 
 ```ts
 // amplify/data/resource.ts
@@ -220,38 +246,38 @@ Restaurant: a
     address: a.string(),
     lat: a.float().required(),
     lng: a.float().required(),
-    photoKey: a.string(),       // S3 object key for the store photo
+    photoKey: a.string(),
   })
   .authorization((allow) => [allow.owner(), allow.authenticated().to(['read'])]),
 ```
 
----
-
-## Working with Claude Code
-
-Useful prompts:
-
-- *"Build a clean Next.js landing page in `web/src/app/page.tsx` for NYC Restaurant Compass — hero, feature highlights, and a Sign up CTA. Match the Tailwind setup."*
-- *"Wire `web/src/lib/auth-context.tsx` to Cognito with signUp, confirmSignUp, signIn, and signOut."*
-- *"Add a `Restaurant` model to `amplify/data/resource.ts` with owner auth, then a `data-api.ts` helper to list and create restaurants."*
-- *"In the SwiftUI app, compute the bearing from the user's location to a selected restaurant and rotate a compass needle that updates with the device heading."*
-
-Ask Claude Code to **explain each AWS resource it creates** so you understand what's running in your account.
-
----
-
-## Cleanup
-
-Stop the sandbox (`Ctrl-C`) and delete its stack to avoid charges:
+**Deploying backend changes from the command line** (requires the `AmplifyBackendDeployFullAccess` policy):
 
 ```bash
-npx ampx sandbox delete --profile <your-aws-profile>
+npx ampx pipeline-deploy --branch main --app-id <your-amplify-app-id>
 ```
 
-For a deployed app, delete the Amplify Hosting app (this removes the branch backends), then confirm the Cognito pool, DynamoDB tables, Lambda functions, and S3 bucket are gone. Ask Claude Code to generate the teardown commands.
+Regenerate the production backend config:
+
+```bash
+npx ampx generate outputs --profile workshop --branch main \
+  --app-id <your-amplify-app-id> --out-dir /tmp \
+  && mv /tmp/amplify_outputs.json amplify_outputs.main.json
+```
+
+**Project layout**
+
+```
+Workshop1/
+├── amplify/                 # backend: auth, data, functions, storage
+├── amplify_outputs.json     # generated backend config
+├── web/                     # the website (Next.js)
+│   └── src/app/             # welcome page, login, signup, dashboard…
+└── <iOS Xcode project>/     # the iPhone app
+```
+
+</details>
 
 ---
 
-## License
-
-MIT — for educational use in the workshop.
+*MIT — for educational use in the workshop.*
