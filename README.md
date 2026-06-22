@@ -97,7 +97,12 @@ This workshop assumes you're starting from scratch. Create these three accounts 
    # follow the browser login flow to connect your Claude account
    ```
 
-### 3. AWS account (the backend)
+### 3. Install VS Code (your editor)
+
+1. Download and install **[Visual Studio Code](https://code.visualstudio.com/)** for your OS.
+2. (Recommended) Add the [Claude Code extension](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code) so you can run Claude Code right inside the editor.
+
+### 4. AWS account (the backend)
 
 1. Sign up at **[aws.amazon.com](https://aws.amazon.com/)** → **Create an AWS Account**. A credit card is required, but this demo stays within the free tier.
 2. Create an IAM user (or IAM Identity Center user) with programmatic access — **don't** use the root account for day-to-day work.
@@ -116,8 +121,8 @@ This workshop assumes you're starting from scratch. Create these three accounts 
 - [ ] [Node.js](https://nodejs.org/) **20+** and npm
 - [ ] [Claude Code](https://claude.com/claude-code) installed and logged in
 - [ ] [AWS CLI](https://aws.amazon.com/cli/) configured with a named profile
+- [ ] **VS Code** installed (with the Claude Code extension)
 - [ ] **Xcode 15+** (Phase 2, iOS) — macOS only
-- [ ] A code editor (VS Code recommended)
 
 ---
 
