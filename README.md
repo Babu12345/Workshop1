@@ -1,169 +1,212 @@
 # NYC Restaurant Compass — Claude Code Workshop
 
-Build a full-stack web **and** mobile app with an **AWS backend**, using [Claude Code](https://claude.com/claude-code) as your pair programmer.
+Build a full-stack **website + iOS app** on an **AWS backend**, using [Claude Code](https://claude.com/claude-code) as your pair programmer.
 
-In this workshop you'll ship **NYC Restaurant Compass**: pick any restaurant in New York City and your phone becomes a compass that points you straight at it. Users can register, log in, and add their own stores to the map.
+The demo: **NYC Restaurant Compass.** Sign up, log in, pick any restaurant in New York City, and your phone becomes a compass that points straight at it. Logged-in users can also **add their own stores**.
 
----
+We build in two phases:
 
-## What you'll build
+1. **Web first** — get the **landing page and login/register** clean and deployed.
+2. **iOS next** — the native app with the live compass, sharing the same accounts and data.
 
-A two-surface app sharing one AWS backend:
-
-- **Web app** — browse and search NYC restaurants, register/login, add new stores.
-- **Mobile app** — the live compass. Select a restaurant and follow the needle.
-- **AWS backend** — authentication, a restaurant database, and a REST API.
-
-### The demo: how the compass works
-
-1. The app reads your device's **GPS location** and **heading** (magnetometer).
-2. You **select a restaurant** from the list/map.
-3. The app computes the **bearing** from you to the restaurant and rotates a needle to point at it, updating live as you turn and walk.
-
----
-
-## What you'll learn
-
-- Driving real feature work with **Claude Code** — planning, generating, and iterating on code.
-- Standing up an **AWS serverless backend** (auth, API, database).
-- Wiring a **frontend to a cloud API** with login-protected requests.
-- Using device sensors (**geolocation + compass heading**) in a mobile app.
-
----
-
-## Architecture
-
-```
-┌─────────────┐     ┌─────────────┐
-│   Web App   │     │ Mobile App  │
-│  (React)    │     │(React Native)│
-└──────┬──────┘     └──────┬──────┘
-       │                   │
-       │  HTTPS (JWT auth) │
-       └─────────┬─────────┘
-                 ▼
-        ┌────────────────┐
-        │  API Gateway   │
-        └────────┬───────┘
-                 ▼
-        ┌────────────────┐      ┌──────────────────┐
-        │  Lambda (API)  │◀────▶│  Amazon Cognito  │
-        │  functions     │      │  (auth / users)  │
-        └────────┬───────┘      └──────────────────┘
-                 ▼
-        ┌────────────────┐
-        │   DynamoDB     │  ← restaurants / stores
-        └────────────────┘
-```
-
-### AWS services used
-
-| Service | Role |
-|---|---|
-| **Amazon Cognito** | User registration, login, and JWT issuance |
-| **API Gateway** | Public REST endpoint for the apps |
-| **AWS Lambda** | Business logic (list / add restaurants) |
-| **DynamoDB** | Stores restaurant + store records |
-| **S3 + CloudFront** *(optional)* | Hosting for the web app |
+> This project is scaffolded from the **`portrait_v2` template** (`/Users/babuwanyeki/Documents/iOSApps/portrait_v2`): a Next.js + AWS Amplify Gen 2 monorepo with a companion SwiftUI iOS app. Both surfaces share one Cognito user pool and one GraphQL/DynamoDB backend, so accounts and data are interchangeable across web and iOS.
 
 ---
 
 ## Tech stack
 
-- **Web:** React + Vite
-- **Mobile:** React Native (Expo) — for `expo-location` and the magnetometer
-- **Backend:** AWS (Cognito, API Gateway, Lambda, DynamoDB)
-- **Infra/tooling:** AWS CLI (or AWS SAM / CDK)
-- **AI pair programmer:** Claude Code
+| Layer | Tech |
+| --- | --- |
+| **Web** | Next.js 16 (App Router, **SSR**), TypeScript, Tailwind CSS |
+| **iOS** | SwiftUI + AWS Amplify Swift libraries |
+| **Auth** | Amazon Cognito (email login) |
+| **Data/API** | AWS AppSync (GraphQL) backed by **DynamoDB** |
+| **Functions** | AWS Lambda (custom business logic) |
+| **Storage** | Amazon S3 (store photos) |
+| **Backend IaC** | AWS Amplify **Gen 2** (`amplify/` — TypeScript) |
+| **Hosting** | AWS Amplify Hosting (SSR) |
+| **AI pair programmer** | Claude Code |
+
+### ⚠️ This is an SSR app (not a static export)
+
+The web app is server-rendered. The template was switched from a static export to SSR — when you scaffold, make sure these two things match:
+
+- **`web/next.config.js`** — no `output: "export"` (and no static-only `trailingSlash` / `images.unoptimized`). Plain SSR config:
+
+  ```js
+  /** @type {import('next').NextConfig} */
+  const nextConfig = {
+    reactStrictMode: true,
+  };
+  module.exports = nextConfig;
+  ```
+
+- **`amplify.yml`** — artifacts `baseDirectory` is **`.next`** (the SSR build output), **not** `out`:
+
+  ```yaml
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  ```
+
+---
+
+## Repository layout
+
+```
+Workshop1/
+├── amplify/                 # Amplify Gen 2 backend (TypeScript)
+│   ├── auth/resource.ts     # Cognito (email login)
+│   ├── data/resource.ts     # GraphQL schema → DynamoDB (Restaurant model)
+│   ├── functions/           # Lambda functions
+│   ├── storage/             # S3 bucket (store photos)
+│   └── backend.ts           # wires it all together
+├── amplify_outputs.json     # generated backend config (sandbox)
+├── web/                     # Next.js SSR web app
+│   ├── next.config.js       # SSR config (no output: export)
+│   ├── src/app/             # App Router: page.tsx (landing), login, signup, dashboard…
+│   ├── src/lib/             # amplify-config, auth-context, data-api
+│   └── src/components/      # ui/, marketing/, auth/
+└── <iOS Xcode project>/     # SwiftUI app (Phase 2)
+```
 
 ---
 
 ## Prerequisites
 
-Before the workshop, please install and set up:
-
-- [ ] [Node.js](https://nodejs.org/) 18+ and npm
-- [ ] [Claude Code](https://claude.com/claude-code) (`npm install -g @anthropic-ai/claude-code`)
-- [ ] An **AWS account** with billing enabled (this demo stays within the free tier)
-- [ ] [AWS CLI](https://aws.amazon.com/cli/) installed and configured (`aws configure`)
-- [ ] A phone with [Expo Go](https://expo.dev/go), or a simulator/emulator
+- [ ] [Node.js](https://nodejs.org/) **20+** and npm
+- [ ] [Claude Code](https://claude.com/claude-code) — `npm install -g @anthropic-ai/claude-code`
+- [ ] An **AWS account** + [AWS CLI](https://aws.amazon.com/cli/) configured (`aws configure` — note your profile name)
+- [ ] **Xcode 15+** (Phase 2, iOS) — macOS only
 - [ ] A code editor (VS Code recommended)
 
 ---
 
-## Workshop flow
+## Phase 1 — Web (landing page + login)
 
-> Each step is driven through Claude Code. Ask it to plan first, then implement.
+### 1. Install and run the backend sandbox
 
-### 1. Project setup
-Scaffold the web and mobile apps and a backend folder.
+The Amplify sandbox spins up a personal Cognito + AppSync + DynamoDB stack and writes `amplify_outputs.json`.
 
-### 2. Backend — auth
-Stand up **Cognito** for register/login and verify you can get a JWT.
+```bash
+# from the repo root
+npm install
+npx ampx sandbox --profile <your-aws-profile>
+# leave this running — it watches amplify/ and redeploys on change
+```
 
-### 3. Backend — data + API
-Create the **DynamoDB** table, **Lambda** handlers, and **API Gateway** routes:
-- `GET /restaurants` — list NYC restaurants
-- `POST /restaurants` — add a store *(auth required)*
+### 2. Run the web app
 
-### 4. Web app — auth + stores
-Build register/login screens and a form to **add a store**, calling the API with the user's token.
+```bash
+cd web
+npm install
 
-### 5. Mobile app — the compass
-Read location + heading, select a restaurant, and render the **live compass** pointing at it.
+# point the web app at the sandbox backend
+cp ../amplify_outputs.json src/amplify_outputs.json
 
-### 6. Polish & deploy
-Seed sample NYC restaurants, handle errors, and (optionally) deploy the web app to **S3 + CloudFront**.
+npm run dev
+# open http://localhost:3000
+```
+
+### 3. Build the landing page and auth (the Phase 1 goal)
+
+Drive this with Claude Code. Focus on a **clean landing page** and a **working login/register** flow before anything else:
+
+- `web/src/app/page.tsx` — marketing landing page (hero, what the app does, call-to-action).
+- `web/src/app/signup`, `login`, `confirm`, `forgot-password` — Cognito auth screens.
+- `web/src/lib/auth-context.tsx` — `signUp` / `signIn` / `confirmSignUp` / `signOut` against Cognito.
+- `web/src/app/dashboard/` — protected route: list NYC restaurants and a form to **add a store**.
+
+**Definition of done for Phase 1:** landing page looks clean, a new user can register → confirm email → log in → land on the dashboard, and add a store that persists to DynamoDB.
+
+### 4. Deploy the web app (AWS Amplify Hosting)
+
+1. Push the repo to GitHub.
+2. AWS Amplify console → **Host web app → Deploy from GitHub**, choose this repo.
+3. Amplify detects `amplify.yml` (SSR; `baseDirectory: .next`) and provisions the backend on your branch.
+4. Add any required environment variables in the Amplify console.
+
+To deploy backend changes to a branch from the CLI:
+
+```bash
+npx ampx pipeline-deploy --branch main --app-id <your-amplify-app-id>
+```
+
+To regenerate the production outputs locally:
+
+```bash
+npx ampx generate outputs --profile <your-aws-profile> --branch main \
+  --app-id <your-amplify-app-id> --out-dir /tmp \
+  && mv /tmp/amplify_outputs.json amplify_outputs.main.json
+```
 
 ---
 
-## API reference (target)
+## Phase 2 — iOS app
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| `POST` | `/auth/register` | — | Register a new user |
-| `POST` | `/auth/login` | — | Log in, returns JWT |
-| `GET` | `/restaurants` | — | List all NYC restaurants |
-| `POST` | `/restaurants` | ✅ | Add a new store |
+The iOS app reuses the **same** Cognito pool and GraphQL backend, so accounts created on the web work on iOS immediately.
 
-**Restaurant record**
+### 1. Open the project
 
-```json
-{
-  "id": "rest_123",
-  "name": "Joe's Pizza",
-  "address": "7 Carmine St, New York, NY",
-  "lat": 40.7305,
-  "lng": -74.0027,
-  "addedBy": "user_abc"
-}
+```bash
+open *.xcodeproj   # from the repo root
+```
+
+### 2. Connect to the backend
+
+`amplify_outputs.json` (from the sandbox or the `main` branch) is bundled into the app so Amplify Swift configures against the same backend as the web app.
+
+### 3. Build the features (in this order)
+
+1. **Auth first** — sign up / confirm / sign in / sign out (mirror the web flow with Amplify Auth).
+2. **Restaurant list** — fetch restaurants from the GraphQL API.
+3. **Add a store** — authenticated create mutation.
+4. **The compass** — read device **location** (`CoreLocation`) and **heading** (magnetometer), compute the **bearing** from the user to the selected restaurant, and rotate a needle to point at it live.
+
+---
+
+## Data model (target)
+
+A single `Restaurant` model, owner-authorized so users manage their own stores:
+
+```ts
+// amplify/data/resource.ts
+Restaurant: a
+  .model({
+    name: a.string().required(),
+    address: a.string(),
+    lat: a.float().required(),
+    lng: a.float().required(),
+    photoKey: a.string(),       // S3 object key for the store photo
+  })
+  .authorization((allow) => [allow.owner(), allow.authenticated().to(['read'])]),
 ```
 
 ---
 
 ## Working with Claude Code
 
-A few prompts to get you moving:
+Useful prompts:
 
-- *"Plan the AWS backend for a restaurant app with Cognito auth and a DynamoDB-backed REST API."*
-- *"Create a Lambda function and API Gateway route to list restaurants from DynamoDB."*
-- *"Build a React login form that authenticates against Cognito and stores the JWT."*
-- *"In the React Native app, compute the bearing from my location to a selected restaurant and rotate a compass needle to point at it."*
+- *"Build a clean Next.js landing page in `web/src/app/page.tsx` for NYC Restaurant Compass — hero, feature highlights, and a Sign up CTA. Match the Tailwind setup."*
+- *"Wire `web/src/lib/auth-context.tsx` to Cognito with signUp, confirmSignUp, signIn, and signOut."*
+- *"Add a `Restaurant` model to `amplify/data/resource.ts` with owner auth, then a `data-api.ts` helper to list and create restaurants."*
+- *"In the SwiftUI app, compute the bearing from the user's location to a selected restaurant and rotate a compass needle that updates with the device heading."*
 
-Tip: ask Claude Code to **explain the AWS resources it creates** so you understand what's running in your account.
+Ask Claude Code to **explain each AWS resource it creates** so you understand what's running in your account.
 
 ---
 
 ## Cleanup
 
-To avoid charges after the workshop, tear down AWS resources:
+Stop the sandbox (`Ctrl-C`) and delete its stack to avoid charges:
 
-- Delete the **Cognito** user pool
-- Delete the **DynamoDB** table
-- Delete the **Lambda** functions and **API Gateway** API
-- Empty and delete the **S3** bucket / **CloudFront** distribution (if used)
+```bash
+npx ampx sandbox delete --profile <your-aws-profile>
+```
 
-You can ask Claude Code to generate the AWS CLI commands to remove everything it created.
+For a deployed app, delete the Amplify Hosting app (this removes the branch backends), then confirm the Cognito pool, DynamoDB tables, Lambda functions, and S3 bucket are gone. Ask Claude Code to generate the teardown commands.
 
 ---
 
