@@ -73,11 +73,49 @@ Workshop1/
 
 ---
 
-## Prerequisites
+## Before you start — create your accounts
 
+This workshop assumes you're starting from scratch. Create these three accounts first (each is free to sign up):
+
+### 1. GitHub account (for code + deploys)
+
+1. Go to **[github.com/signup](https://github.com/signup)** and create an account.
+2. Verify your email.
+3. (Recommended) Install [GitHub Desktop](https://desktop.github.com/) or set up `git` on the command line so you can push code. Amplify Hosting deploys straight from a GitHub repo, so you'll need this in Phase 1.
+
+### 2. Claude account + Claude Code (your AI pair programmer)
+
+1. Sign up at **[claude.ai](https://claude.ai)** with your email.
+2. To use Claude Code you need an active plan (Pro or Max) **or** API billing. Choose one in your [account settings](https://claude.ai/settings/billing).
+3. Install Claude Code:
+   ```bash
+   npm install -g @anthropic-ai/claude-code
+   ```
+4. Run it once and log in when prompted:
+   ```bash
+   claude
+   # follow the browser login flow to connect your Claude account
+   ```
+
+### 3. AWS account (the backend)
+
+1. Sign up at **[aws.amazon.com](https://aws.amazon.com/)** → **Create an AWS Account**. A credit card is required, but this demo stays within the free tier.
+2. Create an IAM user (or IAM Identity Center user) with programmatic access — **don't** use the root account for day-to-day work.
+3. Install the [AWS CLI](https://aws.amazon.com/cli/) and configure a named profile:
+   ```bash
+   aws configure --profile workshop
+   # paste your Access Key ID, Secret Access Key, region (e.g. us-east-1)
+   ```
+   Remember this profile name (`workshop`) — you'll pass it to the Amplify commands below.
+
+---
+
+## Prerequisites (tools)
+
+- [ ] **GitHub**, **Claude**, and **AWS** accounts (see above)
 - [ ] [Node.js](https://nodejs.org/) **20+** and npm
-- [ ] [Claude Code](https://claude.com/claude-code) — `npm install -g @anthropic-ai/claude-code`
-- [ ] An **AWS account** + [AWS CLI](https://aws.amazon.com/cli/) configured (`aws configure` — note your profile name)
+- [ ] [Claude Code](https://claude.com/claude-code) installed and logged in
+- [ ] [AWS CLI](https://aws.amazon.com/cli/) configured with a named profile
 - [ ] **Xcode 15+** (Phase 2, iOS) — macOS only
 - [ ] A code editor (VS Code recommended)
 
