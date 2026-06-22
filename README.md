@@ -105,8 +105,7 @@ This workshop assumes you're starting from scratch. Create these three accounts 
 ### 4. AWS account (the backend)
 
 1. Sign up at **[aws.amazon.com](https://aws.amazon.com/)** → **Create an AWS Account**. A credit card is required, but this demo stays within the free tier.
-2. Create an IAM user (or IAM Identity Center user) with programmatic access — **don't** use the root account for day-to-day work.
-3. Install the [AWS CLI](https://aws.amazon.com/cli/) and configure a named profile:
+2. Install the [AWS CLI](https://aws.amazon.com/cli/) and configure a named profile:
    ```bash
    aws configure --profile workshop
    # paste your Access Key ID, Secret Access Key, region (e.g. us-east-1)
