@@ -26,8 +26,11 @@ struct DashboardView: View {
             VStack(spacing: 20) {
               CompassView(
                 target: selected,
-                origin: compass.origin,
-                heading: compass.heading
+                userLocation: compass.coordinate,
+                heading: compass.heading,
+                hasHeading: compass.hasHeading,
+                authorized: compass.authorized,
+                denied: compass.denied
               )
 
               if !store.errorMessage.isEmpty {

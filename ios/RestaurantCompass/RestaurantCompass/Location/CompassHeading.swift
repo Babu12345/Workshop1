@@ -10,13 +10,21 @@ final class CompassHeading: NSObject, ObservableObject, CLLocationManagerDelegat
   @Published var heading: CLLocationDirection = 0   // degrees from north
   @Published var hasHeading = false
   @Published var authorized = false
+  @Published var denied = false
 
   private let manager = CLLocationManager()
+
+  // Low-pass smoothing state (averaged as a unit vector so it wraps cleanly
+  // across north instead of jumping 359° → 1°).
+  private var smoothedSin = 0.0
+  private var smoothedCos = 1.0
+  private var seeded = false
 
   override init() {
     super.init()
     manager.delegate = self
     manager.desiredAccuracy = kCLLocationAccuracyBest
+    manager.headingFilter = 1   // ignore sub-degree noise
   }
 
   func start() {
@@ -27,20 +35,35 @@ final class CompassHeading: NSObject, ObservableObject, CLLocationManagerDelegat
     }
   }
 
-  // Where the compass points from: live location, or Times Square as a fallback.
-  var origin: CLLocationCoordinate2D { coordinate ?? Geo.fallback }
-
   func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
     coordinate = locations.last?.coordinate
   }
 
   func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
-    heading = newHeading.trueHeading >= 0 ? newHeading.trueHeading : newHeading.magneticHeading
+    let raw = newHeading.trueHeading >= 0 ? newHeading.trueHeading : newHeading.magneticHeading
+    heading = smooth(raw)
     hasHeading = true
+  }
+
+  // Exponential moving average of the heading as a unit vector.
+  private func smooth(_ degrees: Double) -> Double {
+    let radians = degrees * .pi / 180
+    let alpha = 0.2
+    if seeded {
+      smoothedSin = smoothedSin * (1 - alpha) + sin(radians) * alpha
+      smoothedCos = smoothedCos * (1 - alpha) + cos(radians) * alpha
+    } else {
+      smoothedSin = sin(radians)
+      smoothedCos = cos(radians)
+      seeded = true
+    }
+    let result = atan2(smoothedSin, smoothedCos) * 180 / .pi
+    return result < 0 ? result + 360 : result
   }
 
   func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
     let status = manager.authorizationStatus
     authorized = status == .authorizedWhenInUse || status == .authorizedAlways
+    denied = status == .denied || status == .restricted
   }
 }
