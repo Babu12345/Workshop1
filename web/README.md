@@ -87,3 +87,15 @@ and your live site rebuilds itself automatically.
 
 > 🆘 If a build turns red, copy the error message and paste it to Claude Code with
 > *"my Amplify build failed — what do I do?"* — that's the intended way to get unstuck.
+
+### Build notes (for whoever maintains this)
+
+- **The build uses `npm install`, not `npm ci`** (see `amplify.yml`). `npm ci` does a strict
+  lockfile check and fails on this project because `@aws-amplify/backend-cli`'s CDK/WASM
+  optional dependencies (`cdk-from-cfn`, `@aws-cdk/toolkit-lib`, some `@smithy/*` packages)
+  aren't recorded in `package-lock.json` in the exact shape `npm ci` demands. The symptom is
+  a first-step failure like `npm error Missing: @aws-cdk/toolkit-lib@… from lock file`.
+  `npm install` reconciles the lockfile and installs cleanly, so both the backend and
+  frontend phases in `amplify.yml` use it.
+- `amplify_outputs.json` is generated during the build (`ampx generate outputs … --out-dir
+  src`) and is gitignored — never commit it.
