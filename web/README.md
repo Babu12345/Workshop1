@@ -68,11 +68,14 @@ updates itself.
 1. Open the **AWS Amplify** console and click **Create new app**.
 2. Choose **GitHub**, sign in when asked, then pick your **Workshop1** repository and the
    **main** branch.
-3. When it asks about the project layout, tick **"My app is a monorepo"** and set the
-   folder to **`web`**.
-4. If it mentions a **service role** (permission to build the backend), click to
-   create/allow it — that's the same AWS permission from Part 1.
-5. Click **Save and deploy**.
+3. Tick **"My app is a monorepo"** and set the folder to **`web`**. Click **Next**.
+4. On the **App settings** screen, tick **"My monorepo uses Amplify Gen2 Backend"**.
+   ⚠️ **Don't skip this** — it's the box that tells AWS to build your accounts system and
+   database. Without it the site goes live with a broken login.
+5. Ticking that box reveals a **service role** option (permission to build the backend) —
+   let it create/allow one. That's the same AWS permission from Part 1. Leave the detected
+   build settings (`npm run build` → `.next`) as they are.
+6. Click **Next → Save and deploy**.
 
 The first build takes a few minutes — Amplify is setting up your accounts system and
 database for the very first time. When it's done, you get a real link like

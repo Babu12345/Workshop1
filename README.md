@@ -143,9 +143,10 @@ Right now your website only runs on *your* computer with a practice login. Putti
 
 1. **Save your project to GitHub.** Ask Claude Code: *"Help me put this project on GitHub."* It'll walk you through it.
 2. Open the **AWS Amplify** console → **Create new app → Host web app → GitHub**, then pick your **Workshop1** repository and the **main** branch.
-3. When it asks about the project layout, tick **"My app is a monorepo"** and set the folder to **`web`**.
-4. If it offers to create a **service role** (permission to build the backend), allow it — that's the same AWS permission you turned on in Part 1.
-5. Click **Save and deploy**.
+3. On the same screen, tick **"My app is a monorepo"** and set the folder to **`web`**. Click **Next**.
+4. On the **App settings** screen, tick **"My monorepo uses Amplify Gen2 Backend"**. ⚠️ **This is the most important box** — it's what tells AWS to build your accounts system and database. Skip it and your site goes up with a broken login.
+5. After you tick that box, a **service role** option appears (permission to build the backend). Let it **create a new role**, or pick one — that's the AWS permission from Part 1. Everything else on this screen (build command `npm run build`, output `.next`) is detected for you; leave it alone.
+6. Click **Next → Save and deploy**.
 
 The first build takes a few minutes — AWS is setting up your accounts system and database for the very first time. When it's done, you get a real link like `https://main.xxxxxx.amplifyapp.com` you can share with anyone! 🎉 From now on, every time you save changes to GitHub, your live site updates itself.
 
