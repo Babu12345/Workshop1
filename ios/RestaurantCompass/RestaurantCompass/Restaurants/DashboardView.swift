@@ -69,8 +69,8 @@ struct DashboardView: View {
         }
       }
       .sheet(isPresented: $showingAdd) {
-        AddRestaurantView { name, cuisine, address in
-          await store.add(name: name, cuisine: cuisine, address: address)
+        AddRestaurantView { name, cuisine, address, coordinate in
+          await store.add(name: name, cuisine: cuisine, address: address, coordinate: coordinate)
           selectedID = store.restaurants.first { $0.name == name }?.id ?? selectedID
         }
       }

@@ -79,6 +79,7 @@ you like — synchronized folders don't care):
 | Auth | `AuthViewModel.swift`, `AuthView.swift` | Cognito sign up → confirm code → sign in (same flow as the website) |
 | Data | `RestaurantStore.swift` | `list` / `create` via the typed Amplify Data API, plus first-run seeding |
 | Compass | `CompassHeading.swift`, `Geo.swift`, `CompassView.swift` | `CoreLocation` heading + bearing math; the needle |
+| Address | `AddressSearch.swift` | MapKit (`MKLocalSearchCompleter`) autocomplete for the add-restaurant address |
 | Screens | `DashboardView.swift`, `AddRestaurantView.swift` | The list, add-a-restaurant, and the compass card |
 
 ### How the data layer works
@@ -98,6 +99,11 @@ shared list and edits only their own additions.
 direction the phone is pointing. The needle rotates by `bearing(you → restaurant) − heading`,
 so it tracks the restaurant as you physically turn. On the Simulator there's no magnetometer —
 set a location via **Features → Location** and the needle falls back to a north-up bearing.
+
+For added restaurants to point at the *real* place, the add sheet uses MapKit autocomplete
+(`AddressSearch`): pick a suggestion and its exact coordinates are stored. If you don't pick one,
+the typed address is geocoded (`Geo.coordinate(forAddress:)`), and only if that fails does it drop
+near Manhattan.
 
 ## Run it
 Pick an iPhone simulator (or your device) and **⌘R**. Sign up → check email for the code →

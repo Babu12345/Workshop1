@@ -1,4 +1,4 @@
-import CoreLocation
+import MapKit
 
 // Plain geometry for the compass — no backend or device dependency.
 enum Geo {
@@ -22,5 +22,37 @@ enum Geo {
     let a = CLLocation(latitude: from.latitude, longitude: from.longitude)
     let b = CLLocation(latitude: to.latitude, longitude: to.longitude)
     return a.distance(from: b) / 1609.344
+  }
+
+  // Look up real coordinates for a typed address (nudged toward NYC so partial
+  // addresses like "32 Spring St" resolve). Returns nil if it's empty or no
+  // match is found.
+  static func coordinate(forAddress address: String) async -> CLLocationCoordinate2D? {
+    let trimmed = address.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty else { return nil }
+
+    let mentionsNY =
+      trimmed.range(of: "new york", options: .caseInsensitive) != nil ||
+      trimmed.range(of: ", ny", options: .caseInsensitive) != nil
+
+    let request = MKLocalSearch.Request()
+    request.naturalLanguageQuery = mentionsNY ? trimmed : "\(trimmed), New York, NY"
+    request.region = MKCoordinateRegion(
+      center: fallback,
+      latitudinalMeters: 25_000,
+      longitudinalMeters: 25_000
+    )
+
+    guard let response = try? await MKLocalSearch(request: request).start(),
+          let item = response.mapItems.first else { return nil }
+    return item.placemark.coordinate
+  }
+
+  // A random point around Manhattan — used when there's no usable address.
+  static func randomManhattan() -> CLLocationCoordinate2D {
+    CLLocationCoordinate2D(
+      latitude: fallback.latitude + Double.random(in: -0.04...0.04),
+      longitude: fallback.longitude + Double.random(in: -0.04...0.04)
+    )
   }
 }

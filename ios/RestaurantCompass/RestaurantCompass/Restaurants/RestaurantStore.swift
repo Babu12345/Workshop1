@@ -43,16 +43,24 @@ final class RestaurantStore: ObservableObject {
     }
   }
 
-  func add(name: String, cuisine: String, address: String) async {
-    // Beginners don't know GPS coordinates, so new spots land at a random
-    // point around Manhattan — enough to make the compass move.
-    let jitter = { Double.random(in: -0.04...0.04) }
+  func add(name: String, cuisine: String, address: String, coordinate: CLLocationCoordinate2D?) async {
+    // Prefer the exact coordinate from a tapped autocomplete suggestion. If we
+    // don't have one, geocode the typed address; if that fails too, fall back
+    // to a random point around Manhattan so the compass still has a target.
+    let resolved: CLLocationCoordinate2D
+    if let coordinate {
+      resolved = coordinate
+    } else if let geocoded = await Geo.coordinate(forAddress: address) {
+      resolved = geocoded
+    } else {
+      resolved = Geo.randomManhattan()
+    }
     let restaurant = Restaurant(
       name: name,
       cuisine: cuisine.isEmpty ? "Restaurant" : cuisine,
       address: address.isEmpty ? "New York, NY" : address,
-      lat: Geo.fallback.latitude + jitter(),
-      lng: Geo.fallback.longitude + jitter()
+      lat: resolved.latitude,
+      lng: resolved.longitude
     )
     do {
       let result = try await Amplify.API.mutate(request: .create(restaurant))
