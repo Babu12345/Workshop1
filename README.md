@@ -93,18 +93,13 @@ AWS is where your accounts and restaurant list will be stored online.
 
 > 🙋 Not sure how to do any AWS step? Ask Claude Code! Type: *"Walk me through attaching the AmplifyBackendDeployFullAccess policy in AWS, step by step."*
 
-### Step 5 — Install the helper tools
+### Step 5 — Install the helper tool
 
-These are two small programs our project needs. (VS Code users: open a Terminal with **Terminal → New Terminal**. Claude Desktop users: just ask Claude to run the commands for you.)
+You only need one small program to build the website on your computer. (VS Code users: open a Terminal with **Terminal → New Terminal**. Claude Desktop users: just ask Claude to run the commands for you.)
 
 - **Node.js** — download the "LTS" version from **[nodejs.org](https://nodejs.org/)** and install it. (This lets the website run on your computer while you build it.)
-- **AWS CLI** — follow the installer at **[aws.amazon.com/cli](https://aws.amazon.com/cli/)**. Then connect it to your AWS account by typing this in the Terminal and pressing Enter:
 
-  ```bash
-  aws configure --profile workshop
-  ```
-
-  It will ask for an "Access Key", "Secret Key", and "region". You get these from your AWS account (Claude Code can walk you through finding them — just ask!). The word `workshop` is just a nickname for your AWS account; remember it for later.
+That's all you need to install. Putting your site online in Part 3 happens entirely in your web browser, so there's no command-line tooling to set up.
 
 ✅ **You also only need this if you're building the iPhone app (Part 4):** install **Xcode** from the Mac App Store. (Mac only.)
 
@@ -114,31 +109,21 @@ These are two small programs our project needs. (VS Code users: open a Terminal 
 
 Now the fun part. Open your project folder in your workspace (VS Code: **File → Open Folder**; Claude Desktop: point Claude at the project folder), and get a Terminal ready (or let Claude run the commands for you).
 
-### Step 1 — Start the backend
+> 💡 **What about the backend?** In this part you build and preview the website **on your own computer**, where the login is just for practice. The real accounts-and-database backend gets created automatically when you put the site online in Part 3 — so there's nothing extra to set up or run here.
+
+### Step 1 — Start the website on your computer
 
 Type this and press Enter:
 
 ```bash
-npm install
-npx ampx sandbox --profile workshop
-```
-
-What this does: the first line gathers the building blocks the project needs. The second line creates your personal backend on AWS (your login system and database). **Leave this running** — it keeps watching for changes. Open a *second* Terminal for the next step (or, in Claude Desktop, just ask Claude to run the next commands).
-
-### Step 2 — Start the website on your computer
-
-In the **second** Terminal, type:
-
-```bash
 cd web
 npm install
-cp ../amplify_outputs.json src/amplify_outputs.json
 npm run dev
 ```
 
-When it finishes, it'll show a web address like **http://localhost:3000**. Hold Cmd (Mac) or Ctrl (Windows) and click it — your website opens in the browser! Right now it's mostly empty. That's where Claude Code comes in.
+What this does: `npm install` gathers the building blocks the project needs, and `npm run dev` starts the website. When it finishes, it shows a web address like **http://localhost:3000** — hold Cmd (Mac) or Ctrl (Windows) and click it to open your site in the browser. **Leave this running**; it updates by itself as things change. Right now the page is mostly empty — that's where Claude Code comes in.
 
-### Step 3 — Ask Claude Code to build it
+### Step 2 — Ask Claude Code to build it
 
 This is the heart of the workshop. Talk to Claude Code and ask for what you want. Try these, one at a time:
 
@@ -148,19 +133,23 @@ This is the heart of the workshop. Talk to Claude Code and ask for what you want
 
 After each request, refresh your browser to see what changed. Don't like something? Just say so: *"Make the welcome page use warmer colors and a bigger headline."*
 
-🎯 **You've finished Part 2 when:** the welcome page looks nice, a new person can sign up, confirm their email, log in, and add a restaurant that's still there when they come back.
+🎯 **You've finished Part 2 when:** the welcome page looks nice, you can move from the welcome page through the login into the dashboard, and the dashboard lists NYC restaurants and lets you add a new one. (Real sign-ups and saved data switch on once you deploy in Part 3.)
 
 ---
 
-## Part 3 — Put your website on the internet
+## Part 3 — Put your website on the internet (and switch on real accounts)
 
-Right now your website only runs on *your* computer. Let's make it public.
+Right now your website only runs on *your* computer with a practice login. Putting it online does two things at once: it gives you a real web address, **and** it creates the real backend (the accounts system + database) automatically — no extra setup on your end.
 
 1. **Save your project to GitHub.** Ask Claude Code: *"Help me put this project on GitHub."* It'll walk you through it.
-2. Go to the **AWS Amplify** service in your AWS account → **Host web app → Deploy from GitHub**, and choose your project.
-3. AWS reads the included settings file and does the rest. After a few minutes, you get a real web address you can share with anyone! 🎉
+2. Open the **AWS Amplify** console → **Create new app → Host web app → GitHub**, then pick your **Workshop1** repository and the **main** branch.
+3. When it asks about the project layout, tick **"My app is a monorepo"** and set the folder to **`web`**.
+4. If it offers to create a **service role** (permission to build the backend), allow it — that's the same AWS permission you turned on in Part 1.
+5. Click **Save and deploy**.
 
-> If something fails here, copy the error message and paste it to Claude Code — it'll tell you what to fix.
+The first build takes a few minutes — AWS is setting up your accounts system and database for the very first time. When it's done, you get a real link like `https://main.xxxxxx.amplifyapp.com` you can share with anyone! 🎉 From now on, every time you save changes to GitHub, your live site updates itself.
+
+> If a build turns red, copy the error message and paste it to Claude Code with *"my Amplify build failed — what do I do?"* — it'll tell you what to fix.
 
 ---
 
@@ -180,16 +169,12 @@ The app shares the *same* accounts and restaurants as your website — so anyone
 
 ## When you're done — clean up (avoid surprise charges) 🧹
 
-To make sure AWS doesn't keep anything running:
+Running the website on your own computer costs nothing — to stop it, click the Terminal and press **Ctrl + C**, or just close the window.
 
-1. In the Terminal that's running the backend, press **Ctrl + C** to stop it.
-2. Then type:
+The only thing that can ever cost money is what you put online in Part 3. If you deployed, remove it when you're done:
 
-   ```bash
-   npx ampx sandbox delete --profile workshop
-   ```
-
-3. If you deployed your website in Part 3, delete the app in the **AWS Amplify** console too.
+1. Open the **AWS Amplify** console and select your **Workshop1** app.
+2. **App settings → General → Delete app.** This removes the website *and* the backend (accounts + database) it created in one go.
 
 Not sure if everything's gone? Ask Claude Code: *"Help me confirm I've deleted all the AWS resources from this project so I won't be charged."*
 
@@ -248,42 +233,43 @@ This project is built from a template (`portrait_v2`): a Next.js web app + AWS A
 **The data model** — a single `Restaurant`, owner-authorized so users manage their own:
 
 ```ts
-// amplify/data/resource.ts
+// web/amplify/data/resource.ts
 Restaurant: a
   .model({
     name: a.string().required(),
+    cuisine: a.string(),
     address: a.string(),
     lat: a.float().required(),
     lng: a.float().required(),
-    photoKey: a.string(),
   })
   .authorization((allow) => [allow.owner(), allow.authenticated().to(['read'])]),
 ```
 
-**Deploying backend changes from the command line** (requires the `AmplifyBackendDeployFullAccess` policy):
+You normally never need the command line for this — every push to GitHub redeploys the whole app. But if you ever want to deploy the backend by hand (requires the `AmplifyBackendDeployFullAccess` policy and the AWS CLI):
 
 ```bash
+cd web
 npx ampx pipeline-deploy --branch main --app-id <your-amplify-app-id>
 ```
 
-Regenerate the production backend config:
+To pull the live backend config down to your computer (so a local preview can talk to it):
 
 ```bash
-npx ampx generate outputs --profile workshop --branch main \
-  --app-id <your-amplify-app-id> --out-dir /tmp \
-  && mv /tmp/amplify_outputs.json amplify_outputs.main.json
+cd web
+npx ampx generate outputs --branch main --app-id <your-amplify-app-id> --out-dir src
 ```
 
 **Project layout**
 
 ```
 Workshop1/
-├── amplify/                 # backend: auth, data, functions, storage
-├── amplify_outputs.json     # generated backend config
-├── web/                     # the website (Next.js)
-│   └── src/app/             # welcome page, login, signup, dashboard…
-└── <iOS Xcode project>/     # the iPhone app
+├── amplify.yml              # tells AWS Amplify how to build & deploy the whole thing
+└── web/                     # the website (Next.js)
+    ├── amplify/             # the backend: email login + the Restaurant database
+    └── src/app/             # welcome page, signup, confirm, login, dashboard…
 ```
+
+The backend config (`amplify_outputs.json`) isn't checked in — it's generated automatically, both when you preview locally and when AWS Amplify builds your live site.
 
 </details>
 
