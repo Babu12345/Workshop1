@@ -36,7 +36,7 @@ You don't need to memorize these — just glance back here whenever a word looks
 | **Deploy** | To put your website or app "live" on the internet so other people can use it. |
 | **Claude Code** | Your AI assistant. It writes and edits the code when you ask it to, in plain English. |
 
-> 💡 **Where do I type commands?** In VS Code (which you'll install below), open the menu **Terminal → New Terminal**. A panel opens at the bottom — that's where commands go.
+> 💡 **Where do I type commands?** Wherever you run Claude Code (see Step 1). In **VS Code**, open **Terminal → New Terminal** — a panel opens at the bottom. In the **Claude desktop app**, you can simply *ask* Claude to run a command for you, or use its built-in terminal. Either way, you copy, paste, and let it run.
 
 ---
 
@@ -44,13 +44,21 @@ You don't need to memorize these — just glance back here whenever a word looks
 
 We need to create a few free accounts and install a few programs. Take your time and do these in order. ☕
 
-### Step 1 — Install VS Code (your workspace)
+### Step 1 — Choose your workspace (pick ONE)
 
-VS Code is the program where everything happens — it's like Microsoft Word, but for building apps.
+This is where everything happens. Pick the option that sounds more like you — both run **Claude Code**, so both can build the whole project.
 
+**Option A — Claude Desktop (easiest, "I really don't want to see code")** 🟢
+> A simple chat window. You type what you want; Claude does it behind the scenes. Best if you want the least technical experience.
+1. Download the **Claude desktop app** from **[claude.ai/download](https://claude.ai/download)**.
+2. Install and open it, then sign in (you'll set up the account in Step 3).
+
+**Option B — VS Code (more control, "I'm curious to see the code")** 🔵
+> A proper builder's workspace where you can watch the files change. Still beginner-friendly.
 1. Go to **[code.visualstudio.com](https://code.visualstudio.com/)** and click the big download button.
-2. Install it like any other program.
-3. Open it. We'll come back to it in every step.
+2. Install it like any other program, then open it.
+
+> 👉 The rest of this guide works the same either way. When we say "ask Claude Code," you do that in whichever app you picked. When we say "open a Terminal," VS Code users use the Terminal panel; Claude Desktop users can just ask Claude to run the command.
 
 ### Step 2 — Create a GitHub account (where your project lives)
 
@@ -65,10 +73,11 @@ This is the helper that actually writes the code.
 
 1. Create a Claude account at **[claude.ai](https://claude.ai)**.
 2. Claude Code needs a paid plan (Claude **Pro** or **Max**). Pick one at **[claude.ai/settings/billing](https://claude.ai/settings/billing)**.
-3. In VS Code, install the **Claude Code extension**: click the squares icon on the left (Extensions), search for **"Claude Code"**, and click **Install**. [Direct link here.](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code)
-4. When it asks you to log in, follow the prompt — it opens your browser and connects your Claude account.
+3. Turn on Claude Code in the workspace you picked in Step 1:
+   - **Claude Desktop (Option A):** sign in to the app — Claude Code is built in. You're ready to go.
+   - **VS Code (Option B):** install the **Claude Code extension** — click the squares icon on the left (Extensions), search for **"Claude Code"**, click **Install**, then log in when prompted. [Direct link here.](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code)
 
-> From now on, you can just *talk* to Claude Code inside VS Code. Ask it things in plain English like "build me a welcome page."
+> From now on, you can just *talk* to Claude Code. Ask it things in plain English like "build me a welcome page."
 
 ### Step 4 — Create an AWS account (your backend)
 
@@ -86,7 +95,7 @@ AWS is where your accounts and restaurant list will be stored online.
 
 ### Step 5 — Install the helper tools
 
-These are two small programs our project needs. In VS Code, open a Terminal (**Terminal → New Terminal**) and we'll install them.
+These are two small programs our project needs. (VS Code users: open a Terminal with **Terminal → New Terminal**. Claude Desktop users: just ask Claude to run the commands for you.)
 
 - **Node.js** — download the "LTS" version from **[nodejs.org](https://nodejs.org/)** and install it. (This lets the website run on your computer while you build it.)
 - **AWS CLI** — follow the installer at **[aws.amazon.com/cli](https://aws.amazon.com/cli/)**. Then connect it to your AWS account by typing this in the Terminal and pressing Enter:
@@ -103,7 +112,7 @@ These are two small programs our project needs. In VS Code, open a Terminal (**T
 
 ## Part 2 — Build the website (welcome page + login)
 
-Now the fun part. Open your project folder in VS Code (**File → Open Folder**) and open a Terminal.
+Now the fun part. Open your project folder in your workspace (VS Code: **File → Open Folder**; Claude Desktop: point Claude at the project folder), and get a Terminal ready (or let Claude run the commands for you).
 
 ### Step 1 — Start the backend
 
@@ -114,7 +123,7 @@ npm install
 npx ampx sandbox --profile workshop
 ```
 
-What this does: the first line gathers the building blocks the project needs. The second line creates your personal backend on AWS (your login system and database). **Leave this Terminal window running** — it keeps watching for changes. Open a *second* Terminal for the next step (**Terminal → New Terminal** again).
+What this does: the first line gathers the building blocks the project needs. The second line creates your personal backend on AWS (your login system and database). **Leave this running** — it keeps watching for changes. Open a *second* Terminal for the next step (or, in Claude Desktop, just ask Claude to run the next commands).
 
 ### Step 2 — Start the website on your computer
 
