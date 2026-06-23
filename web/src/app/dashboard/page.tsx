@@ -13,8 +13,9 @@ import {
   ORIGIN,
   bearing,
   distanceMiles,
-  loadRestaurants,
-  saveRestaurants,
+  listRestaurants,
+  createRestaurant,
+  seedIfEmpty,
 } from "@/lib/restaurants";
 
 export default function DashboardPage() {
@@ -22,51 +23,69 @@ export default function DashboardPage() {
   const { user, loading, signOut } = useAuth();
 
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [cuisine, setCuisine] = useState("");
   const [address, setAddress] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  // Protect the page: bounce to login if there's no demo session.
+  // Protect the page: bounce to login if there's no signed-in user.
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
   }, [loading, user, router]);
 
-  // Load the list once we're on the client.
+  // Load the shared list from the backend once we have a signed-in user.
+  // seedIfEmpty() fills it with the starter NYC spots the very first time.
   useEffect(() => {
-    const list = loadRestaurants();
-    setRestaurants(list);
-    setSelectedId(list[0]?.id ?? null);
-  }, []);
+    if (loading || !user) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const list = await seedIfEmpty();
+        if (cancelled) return;
+        setRestaurants(list);
+        setSelectedId(list[0]?.id ?? null);
+      } finally {
+        if (!cancelled) setDataLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [loading, user]);
 
   const selected = useMemo(
     () => restaurants.find((r) => r.id === selectedId) ?? null,
     [restaurants, selectedId]
   );
 
-  function handleAdd(e: React.FormEvent) {
+  async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
-    // Beginners don't know GPS coordinates, so the demo drops new spots at a
-    // random point around Manhattan — enough to make the compass move.
-    const jitter = () => (Math.random() - 0.5) * 0.08;
-    const next: Restaurant = {
-      id: `r-${restaurants.length}-${name.trim().toLowerCase().replace(/\s+/g, "-")}`,
-      name: name.trim(),
-      cuisine: cuisine.trim() || "Restaurant",
-      address: address.trim() || "New York, NY",
-      lat: ORIGIN.lat + jitter(),
-      lng: ORIGIN.lng + jitter(),
-    };
-    const updated = [...restaurants, next];
-    setRestaurants(updated);
-    saveRestaurants(updated);
-    setSelectedId(next.id);
-    setName("");
-    setCuisine("");
-    setAddress("");
-    setShowForm(false);
+    setSaving(true);
+    try {
+      // Beginners don't know GPS coordinates, so new spots land at a random
+      // point around Manhattan — enough to make the compass move.
+      const jitter = () => (Math.random() - 0.5) * 0.08;
+      const created = await createRestaurant({
+        name: name.trim(),
+        cuisine: cuisine.trim() || "Restaurant",
+        address: address.trim() || "New York, NY",
+        lat: ORIGIN.lat + jitter(),
+        lng: ORIGIN.lng + jitter(),
+      });
+      const list = await listRestaurants();
+      setRestaurants(list);
+      if (created) setSelectedId(created.id);
+      setName("");
+      setCuisine("");
+      setAddress("");
+      setShowForm(false);
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (loading || !user) {
@@ -133,11 +152,18 @@ export default function DashboardPage() {
             <Input name="cuisine" label="Cuisine" placeholder="Pizza" value={cuisine} onChange={(e) => setCuisine(e.target.value)} />
             <Input name="address" label="Address" placeholder="1424 Avenue J" value={address} onChange={(e) => setAddress(e.target.value)} />
             <div className="sm:col-span-3">
-              <Button type="submit">Save restaurant</Button>
+              <Button type="submit" loading={saving} loadingText="Saving…">
+                Save restaurant
+              </Button>
             </div>
           </form>
         )}
 
+        {dataLoading ? (
+          <div className="mt-16 grid place-items-center">
+            <Spinner />
+          </div>
+        ) : (
         <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_360px]">
           {/* List */}
           <ul className="grid gap-4 sm:grid-cols-2">
@@ -207,6 +233,7 @@ export default function DashboardPage() {
             </div>
           </aside>
         </div>
+        )}
       </main>
     </div>
   );

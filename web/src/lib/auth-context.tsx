@@ -1,53 +1,99 @@
 "use client";
 
-// A pretend login system for the demo. It does NOT check passwords or talk to a
-// server — any email/password is accepted and the "session" is just saved in the
-// browser. In the real workshop this gets swapped for AWS Amplify (Cognito),
-// which gives you real accounts, email confirmation, and password reset.
+// Real authentication, backed by Amazon Cognito (set up in amplify/auth).
+// Sign up → confirm with an emailed code → log in. The user "session" is a real
+// Cognito token managed by the Amplify libraries, not a fake localStorage flag.
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import {
+  getCurrentUser,
+  fetchAuthSession,
+  signUp as amplifySignUp,
+  confirmSignUp as amplifyConfirmSignUp,
+  resendSignUpCode,
+  signIn as amplifySignIn,
+  signOut as amplifySignOut,
+} from "aws-amplify/auth";
+import { configureAmplify } from "./amplify-config";
+
+configureAmplify();
 
 interface User {
-  email: string;
+  userId: string;
+  email: string | null;
 }
 
 interface AuthValue {
   user: User | null;
   loading: boolean;
-  signIn: (email: string) => void;
-  signOut: () => void;
+  signUp: (email: string, password: string) => Promise<{ needsConfirmation: boolean }>;
+  confirmSignUp: (email: string, code: string) => Promise<void>;
+  resendCode: (email: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
-const STORAGE_KEY = "compass.user.v1";
 const AuthContext = createContext<AuthValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  // Ask Cognito who's currently signed in (if anyone).
+  const refresh = useCallback(async () => {
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setUser(JSON.parse(raw) as User);
+      const current = await getCurrentUser();
+      const session = await fetchAuthSession();
+      const email = (session.tokens?.idToken?.payload?.email as string | undefined) ?? null;
+      setUser({ userId: current.userId, email });
     } catch {
-      /* ignore */
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
-  function signIn(email: string) {
-    const next = { email };
-    setUser(next);
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  }
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
-  function signOut() {
+  const signUp = useCallback(async (email: string, password: string) => {
+    const result = await amplifySignUp({
+      username: email,
+      password,
+      options: { userAttributes: { email } },
+    });
+    return { needsConfirmation: !result.isSignUpComplete };
+  }, []);
+
+  const confirmSignUp = useCallback(async (email: string, code: string) => {
+    await amplifyConfirmSignUp({ username: email, confirmationCode: code });
+  }, []);
+
+  const resendCode = useCallback(async (email: string) => {
+    await resendSignUpCode({ username: email });
+  }, []);
+
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      const { isSignedIn, nextStep } = await amplifySignIn({ username: email, password });
+      if (!isSignedIn) {
+        throw new Error(`Additional step required: ${nextStep.signInStep}`);
+      }
+      await refresh();
+    },
+    [refresh]
+  );
+
+  const signOut = useCallback(async () => {
+    await amplifySignOut();
     setUser(null);
-    window.localStorage.removeItem(STORAGE_KEY);
-  }
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+    <AuthContext.Provider
+      value={{ user, loading, signUp, confirmSignUp, resendCode, signIn, signOut }}
+    >
       {children}
     </AuthContext.Provider>
   );

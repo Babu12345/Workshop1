@@ -30,7 +30,7 @@ export function MarketingNav() {
               >
                 Log in
               </Link>
-              <Link href="/login" className="btn-primary">
+              <Link href="/signup" className="btn-primary">
                 Get started
               </Link>
             </>

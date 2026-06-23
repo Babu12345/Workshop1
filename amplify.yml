@@ -1,0 +1,31 @@
+version: 1
+applications:
+  - appRoot: web
+    backend:
+      phases:
+        build:
+          commands:
+            # Deploy the Amplify Gen 2 backend (Cognito + AppSync + DynamoDB) for
+            # this branch. Writes amplify_outputs.json into the app root.
+            - npm ci --cache .npm --prefer-offline
+            - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
+    frontend:
+      phases:
+        preBuild:
+          commands:
+            - npm ci --cache .npm --prefer-offline
+        build:
+          commands:
+            # Pull the freshly-deployed backend config into src/ so the Next app
+            # can import it, then build the SSR site.
+            - npx ampx generate outputs --branch $AWS_BRANCH --app-id $AWS_APP_ID --out-dir src
+            - npm run build
+      artifacts:
+        # SSR build output (not a static export).
+        baseDirectory: .next
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - .npm/**/*
+          - node_modules/**/*

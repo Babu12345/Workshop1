@@ -32,8 +32,8 @@ export default function HomePage() {
               restaurant you choose. Sign in, pick a spot, and just walk toward the arrow.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Link href="/login" className="btn-primary">
-                Try the demo
+              <Link href="/signup" className="btn-primary">
+                Create an account
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <a href="#how" className="btn-secondary">
@@ -41,7 +41,11 @@ export default function HomePage() {
               </a>
             </div>
             <p className="mt-4 text-xs text-ink-500 dark:text-ink-400">
-              No sign-up needed — it&apos;s a demo. Any email and password will get you in.
+              Already have an account?{" "}
+              <Link href="/login" className="font-medium text-ink-700 hover:text-ink-900 dark:text-ink-200 dark:hover:text-ink-50">
+                Log in
+              </Link>
+              .
             </p>
           </div>
 

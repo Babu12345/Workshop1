@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useAuth } from "@/lib/auth-context";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { signUp } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -21,16 +21,14 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      await signIn(email.trim(), password);
-      router.push("/dashboard");
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Could not sign in.";
-      // Cognito tells you to confirm first if the account is unverified.
-      if (/confirm/i.test(message)) {
+      const { needsConfirmation } = await signUp(email.trim(), password);
+      if (needsConfirmation) {
         router.push(`/confirm?email=${encodeURIComponent(email.trim())}`);
-        return;
+      } else {
+        router.push("/login");
       }
-      setError(message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not sign up.");
       setLoading(false);
     }
   }
@@ -50,10 +48,10 @@ export default function LoginPage() {
         <div className="w-full max-w-md animate-slide-up">
           <div className="card">
             <h1 className="text-2xl font-semibold tracking-tight text-ink-900 dark:text-ink-50">
-              Welcome back
+              Create your account
             </h1>
             <p className="mt-1 text-sm text-ink-600 dark:text-ink-300">
-              Log in to see your restaurants and the compass.
+              We&apos;ll email you a 6-digit code to confirm it&apos;s you.
             </p>
 
             <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
@@ -71,23 +69,24 @@ export default function LoginPage() {
                 name="password"
                 type="password"
                 label="Password"
-                placeholder="••••••••"
+                placeholder="At least 8 characters"
+                hint="Cognito's default: 8+ chars with upper, lower, and a number."
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
+                autoComplete="new-password"
                 error={error}
                 required
               />
-              <Button type="submit" fullWidth loading={loading} loadingText="Signing in…">
-                Log in
+              <Button type="submit" fullWidth loading={loading} loadingText="Creating…">
+                Sign up
               </Button>
             </form>
           </div>
 
           <p className="mt-6 text-center text-sm text-ink-500 dark:text-ink-400">
-            New here?{" "}
-            <Link href="/signup" className="font-medium text-ink-700 hover:text-ink-900 dark:text-ink-200 dark:hover:text-ink-50">
-              Create an account
+            Already have an account?{" "}
+            <Link href="/login" className="font-medium text-ink-700 hover:text-ink-900 dark:text-ink-200 dark:hover:text-ink-50">
+              Log in
             </Link>
           </p>
         </div>
