@@ -2,31 +2,55 @@
 //  RestaurantCompassApp.swift
 //  RestaurantCompass
 //
-//  Created by Babu Wanyeki on 6/22/26.
-//
 
 import SwiftUI
-import SwiftData
+import Amplify
+import AWSCognitoAuthPlugin
+import AWSAPIPlugin
 
 @main
 struct RestaurantCompassApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+  init() {
+    Self.configureAmplify()
+  }
 
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
-
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
-        .modelContainer(sharedModelContainer)
+  var body: some Scene {
+    WindowGroup {
+      RootView()
     }
+  }
+
+  // Wire up Cognito auth + the AppSync/GraphQL data API, pointed at the same
+  // backend as the website via amplify_outputs.json (bundled in the app).
+  private static func configureAmplify() {
+    do {
+      try Amplify.add(plugin: AWSCognitoAuthPlugin())
+      try Amplify.add(plugin: AWSAPIPlugin(modelRegistration: AmplifyModels()))
+      try Amplify.configure(with: .resource(named: "amplify_outputs"))
+      print("✅ Amplify configured")
+    } catch {
+      print("❌ Failed to configure Amplify: \(error)")
+    }
+  }
+}
+
+// Shows the login flow until the user is signed in, then the dashboard.
+struct RootView: View {
+  @StateObject private var auth = AuthViewModel()
+
+  var body: some View {
+    Group {
+      if auth.isCheckingAuth {
+        ZStack {
+          Color.paper.ignoresSafeArea()
+          ProgressView()
+        }
+      } else if auth.isSignedIn {
+        DashboardView().environmentObject(auth)
+      } else {
+        AuthView().environmentObject(auth)
+      }
+    }
+    .task { await auth.checkAuthStatus() }
+  }
 }

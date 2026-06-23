@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		88FEFEDA2FEA3EED009ACE07 /* AWSAPIPlugin in Frameworks */ = {isa = PBXBuildFile; productRef = 88FEFED92FEA3EED009ACE07 /* AWSAPIPlugin */; };
+		88FEFEDC2FEA3EED009ACE07 /* AWSCognitoAuthPlugin in Frameworks */ = {isa = PBXBuildFile; productRef = 88FEFEDB2FEA3EED009ACE07 /* AWSCognitoAuthPlugin */; };
+		88FEFEDE2FEA3EED009ACE07 /* Amplify in Frameworks */ = {isa = PBXBuildFile; productRef = 88FEFEDD2FEA3EED009ACE07 /* Amplify */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		88FEFE9E2FEA3C2E009ACE07 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +58,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				88FEFEDE2FEA3EED009ACE07 /* Amplify in Frameworks */,
+				88FEFEDA2FEA3EED009ACE07 /* AWSAPIPlugin in Frameworks */,
+				88FEFEDC2FEA3EED009ACE07 /* AWSCognitoAuthPlugin in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +121,9 @@
 			);
 			name = RestaurantCompass;
 			packageProductDependencies = (
+				88FEFED92FEA3EED009ACE07 /* AWSAPIPlugin */,
+				88FEFEDB2FEA3EED009ACE07 /* AWSCognitoAuthPlugin */,
+				88FEFEDD2FEA3EED009ACE07 /* Amplify */,
 			);
 			productName = RestaurantCompass;
 			productReference = 88FEFE8E2FEA3C2D009ACE07 /* RestaurantCompass.app */;
@@ -195,6 +207,9 @@
 			);
 			mainGroup = 88FEFE852FEA3C2D009ACE07;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				88FEFED82FEA3EED009ACE07 /* XCRemoteSwiftPackageReference "amplify-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 88FEFE8F2FEA3C2D009ACE07 /* Products */;
 			projectDirPath = "";
@@ -400,6 +415,7 @@
 				DEVELOPMENT_TEAM = 96N46HT93Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Allows you to find the restaurant using your phone's location";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -432,6 +448,7 @@
 				DEVELOPMENT_TEAM = 96N46HT93Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Allows you to find the restaurant using your phone's location";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -578,6 +595,35 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		88FEFED82FEA3EED009ACE07 /* XCRemoteSwiftPackageReference "amplify-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/aws-amplify/amplify-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.58.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		88FEFED92FEA3EED009ACE07 /* AWSAPIPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 88FEFED82FEA3EED009ACE07 /* XCRemoteSwiftPackageReference "amplify-swift" */;
+			productName = AWSAPIPlugin;
+		};
+		88FEFEDB2FEA3EED009ACE07 /* AWSCognitoAuthPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 88FEFED82FEA3EED009ACE07 /* XCRemoteSwiftPackageReference "amplify-swift" */;
+			productName = AWSCognitoAuthPlugin;
+		};
+		88FEFEDD2FEA3EED009ACE07 /* Amplify */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 88FEFED82FEA3EED009ACE07 /* XCRemoteSwiftPackageReference "amplify-swift" */;
+			productName = Amplify;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 88FEFE862FEA3C2D009ACE07 /* Project object */;
 }

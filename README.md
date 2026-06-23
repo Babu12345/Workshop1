@@ -156,15 +156,27 @@ The first build takes a few minutes — AWS is setting up your accounts system a
 
 ## Part 4 — Build the iPhone app (Mac only)
 
-The app shares the *same* accounts and restaurants as your website — so anyone who signed up on the website can log in on the phone too.
+The app shares the *same* accounts and restaurants as your website — sign up on the web, log in on the phone, and you see the same list. The phone adds one extra trick: a **compass** that points at whichever restaurant you pick and keeps pointing as you turn.
 
-1. Open the app project in **Xcode** (ask Claude Code: *"Open the iOS app in Xcode for me"* if you're unsure how).
-2. Ask Claude Code to build the features, one at a time:
-   - *"Add sign up and log in to the iPhone app, using the same backend as the website."*
-   - *"Show a list of the restaurants from our backend."*
-   - *"Let me add a new restaurant from the phone."*
-   - *"Build the compass: point a needle at whichever restaurant I select, and keep it pointing as I turn around."*
-3. Press the ▶️ Play button in Xcode to try it on the iPhone simulator.
+> 📘 The full step-by-step is in **`ios/README.md`**. Here's the shape of it.
+
+### A few one-time setups in Xcode
+These are the handful of things you click yourself — Claude Code can write the code, but it can't click around Xcode for you:
+
+1. **Open the app** in Xcode: `ios/RestaurantCompass/RestaurantCompass.xcodeproj`.
+2. **Add the Amplify package**: *File → Add Package Dependencies…*, paste
+   `https://github.com/aws-amplify/amplify-swift`, and add **Amplify**, **AWSCognitoAuthPlugin**, and **AWSAPIPlugin**.
+3. **Add the backend config**: ask Claude Code *"Download the backend config for the iOS app."* It drops an `amplify_outputs.json` into the app so the phone talks to the same backend as your website.
+4. **Allow location**: in the target's **Info** tab, add **Privacy – Location When In Use Usage Description** — this powers the compass.
+
+### Then let Claude Code build the features
+Ask for these one at a time:
+- *"Set up Amplify in the app, and add sign up, confirm-code, and log in using the same backend as the website."*
+- *"After login, show the list of restaurants from our backend."*
+- *"Let me add a new restaurant from the phone."*
+- *"Build the compass: point a needle at whichever restaurant I pick, and keep it pointing as I turn around."*
+
+Press the ▶️ **Play** button in Xcode to try it on the iPhone simulator: sign up → confirm the emailed code → log in → tap a restaurant to aim the compass.
 
 ---
 
