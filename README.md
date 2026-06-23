@@ -272,6 +272,8 @@ Workshop1/
 
 The backend config (`amplify_outputs.json`) isn't checked in — it's generated automatically, both when you preview locally and when AWS Amplify builds your live site.
 
+**One build gotcha** — `amplify.yml` installs packages with `npm install`, *not* `npm ci`. `npm ci` does a strict lockfile check and fails on this project because `@aws-amplify/backend-cli`'s CDK/WASM optional dependencies (`cdk-from-cfn`, `@aws-cdk/toolkit-lib`, some `@smithy/*` packages) aren't recorded in `package-lock.json` the exact way `npm ci` demands. If you ever see a first-step build error like `npm error Missing: @aws-cdk/toolkit-lib@… from lock file`, that's why — `npm install` reconciles it and is what the build uses.
+
 </details>
 
 ---
