@@ -156,7 +156,7 @@ The first build takes a few minutes — AWS is setting up your accounts system a
 
 ## Part 4 — Build the iPhone app (Mac only)
 
-The app shares the *same* accounts and restaurants as your website — sign up on the web, log in on the phone, and you see the same list. The phone adds one extra trick: a **compass** that points at whichever restaurant you pick and keeps pointing as you turn.
+The app shares the *same* accounts and restaurants as your website — sign up on the web, log in on the phone, and you see the same list. The phone adds two things the browser can't: **address autocomplete** when you add a place (so it pins the real spot), and a **compass** that points at whichever restaurant you pick and keeps pointing as you turn.
 
 > 📘 The full step-by-step is in **`ios/README.md`**. Here's the shape of it.
 
@@ -173,10 +173,14 @@ These are the handful of things you click yourself — Claude Code can write the
 Ask for these one at a time:
 - *"Set up Amplify in the app, and add sign up, confirm-code, and log in using the same backend as the website."*
 - *"After login, show the list of restaurants from our backend."*
-- *"Let me add a new restaurant from the phone."*
+- *"Let me add a new restaurant from the phone, with address autocomplete so it pins the real location."*
 - *"Build the compass: point a needle at whichever restaurant I pick, and keep it pointing as I turn around."*
 
 Press the ▶️ **Play** button in Xcode to try it on the iPhone simulator: sign up → confirm the emailed code → log in → tap a restaurant to aim the compass.
+
+### Two gotchas you'll likely hit
+- **Build errors about "main actor-isolated" / "Sendable."** New Xcode projects default to a strict concurrency mode that fights the AWS code. Fix it once: select the **target → Build Settings → search "actor" → set "Default Actor Isolation" to `nonisolated`.** (If you started from Xcode's SwiftData template, also delete the starter `Item.swift` and the SwiftData lines in the app file.)
+- **The compass needs a real iPhone to fully shine.** The Simulator has no compass (magnetometer), so the needle won't rotate as you turn, and your "location" is faked — by default it sits in Cupertino, so distances look huge. To test in the Simulator, set **Features → Location → Custom Location…** to a NYC point (e.g. `40.7448, -73.9756`). On an actual iPhone, your real GPS + compass make it fully live.
 
 ---
 
@@ -219,13 +223,17 @@ This project is built from a template (`portrait_v2`): a Next.js web app + AWS A
 | Layer | Tech |
 | --- | --- |
 | Web | Next.js 16 (App Router, **SSR**), TypeScript, Tailwind CSS |
-| iOS | SwiftUI + AWS Amplify Swift |
-| Auth | Amazon Cognito (email login) |
+| iOS | SwiftUI, AWS Amplify Swift, MapKit (address autocomplete), CoreLocation (compass) |
+| Auth | Amazon Cognito (email login) — shared by web **and** iOS |
 | Data/API | AWS AppSync (GraphQL) → DynamoDB |
-| Functions | AWS Lambda |
-| Storage | Amazon S3 (restaurant photos) |
-| Backend | AWS Amplify Gen 2 (`amplify/`, TypeScript) |
-| Hosting | AWS Amplify Hosting (SSR) |
+| Backend | AWS Amplify Gen 2 (`web/amplify/`, TypeScript) |
+| Hosting | AWS Amplify Hosting — **one fullstack app** builds the backend + the SSR site |
+
+Both the website and the iOS app point at the **same** Cognito user pool and the same
+`Restaurant` table, so accounts and data are shared across them. The website is a single
+fullstack Amplify app (it builds `web/amplify/` and the Next.js site together); the iOS app
+just bundles the generated `amplify_outputs.json` to reach that same backend. Full details:
+**`web/README.md`** and **`ios/README.md`**.
 
 **This is a server-rendered (SSR) app, not a static export.** Two settings make that work:
 
@@ -276,15 +284,20 @@ npx ampx generate outputs --branch main --app-id <your-amplify-app-id> --out-dir
 
 ```
 Workshop1/
-├── amplify.yml              # tells AWS Amplify how to build & deploy the whole thing
-└── web/                     # the website (Next.js)
-    ├── amplify/             # the backend: email login + the Restaurant database
-    └── src/app/             # welcome page, signup, confirm, login, dashboard…
+├── amplify.yml              # tells AWS Amplify how to build & deploy the website
+├── web/                     # the website (Next.js)
+│   ├── amplify/             # the backend: email login + the Restaurant database
+│   └── src/app/             # welcome page, signup, confirm, login, dashboard…
+└── ios/                     # the iPhone app (SwiftUI)
+    └── RestaurantCompass/   # opens in Xcode; bundles amplify_outputs.json
 ```
 
-The backend config (`amplify_outputs.json`) isn't checked in — it's generated automatically, both when you preview locally and when AWS Amplify builds your live site.
+The backend config (`amplify_outputs.json`) isn't checked in — it's generated automatically (for the website at build time; for iOS via `ampx generate outputs` into the app folder).
 
-**One build gotcha** — `amplify.yml` installs packages with `npm install`, *not* `npm ci`. `npm ci` does a strict lockfile check and fails on this project because `@aws-amplify/backend-cli`'s CDK/WASM optional dependencies (`cdk-from-cfn`, `@aws-cdk/toolkit-lib`, some `@smithy/*` packages) aren't recorded in `package-lock.json` the exact way `npm ci` demands. If you ever see a first-step build error like `npm error Missing: @aws-cdk/toolkit-lib@… from lock file`, that's why — `npm install` reconciles it and is what the build uses.
+**Two build gotchas worth knowing:**
+
+- **Web — `npm install`, not `npm ci`.** `amplify.yml` installs with `npm install`. `npm ci`'s strict lockfile check fails here because `@aws-amplify/backend-cli`'s CDK/WASM optional deps (`cdk-from-cfn`, `@aws-cdk/toolkit-lib`, some `@smithy/*`) aren't recorded in `package-lock.json` the way `npm ci` demands. A first-step error like `npm error Missing: @aws-cdk/toolkit-lib@… from lock file` is this — `npm install` reconciles it.
+- **iOS — set "Default Actor Isolation" to `nonisolated`.** Xcode 26 defaults new projects to main-actor-by-default isolation, which throws *"main actor-isolated … Sendable"* errors against the Amplify model layer. Flip it in the target's Build Settings (search "actor"). Also delete the SwiftData starter (`Item.swift`) if you began from that template.
 
 </details>
 
